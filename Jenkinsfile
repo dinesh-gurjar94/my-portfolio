@@ -1,31 +1,53 @@
 
 pipeline {
-    agent any
+    agent {
+        label 'dragon'
+    }
 
     stages {
 
         stage('Checkout') {
             steps {
-                echo 'GitHub repository connected!'
+                checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Check Tools') {
             steps {
-                echo 'Building portfolio application'
+                sh 'node --version'
+                sh 'npm --version'
+                sh 'git --version'
             }
         }
 
-        stage('Test') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Testing portfolio application'
+                sh 'npm install'
             }
         }
 
-        stage('Success') {
+        stage('Build React App') {
             steps {
-                echo 'Portfolio CI pipeline completed!'
+                sh 'npm run build'
+            }
+        }
+
+        stage('Verify Build') {
+            steps {
+                sh 'test -f dist/index.html'
+                sh 'ls -lh dist'
             }
         }
     }
+
+    post {
+        success {
+            echo 'Portfolio React build completed successfully!'
+        }
+
+        failure {
+            echo 'Portfolio CI pipeline failed. Check console output.'
+        }
+    }
 }
+
